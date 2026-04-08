@@ -47,6 +47,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -56,6 +68,25 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+          muted: "hsl(var(--sidebar-muted))",
+        },
+        sprint: {
+          active: "hsl(var(--sprint-active))",
+          planned: "hsl(var(--sprint-planned))",
+          completed: "hsl(var(--sprint-completed))",
+        },
+        priority: {
+          critical: "hsl(var(--priority-critical))",
+          high: "hsl(var(--priority-high))",
+          medium: "hsl(var(--priority-medium))",
+          low: "hsl(var(--priority-low))",
+        },
+        status: {
+          backlog: "hsl(var(--status-backlog))",
+          todo: "hsl(var(--status-todo))",
+          progress: "hsl(var(--status-progress))",
+          review: "hsl(var(--status-review))",
+          done: "hsl(var(--status-done))",
         },
       },
       borderRadius: {
