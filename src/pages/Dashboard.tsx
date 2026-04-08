@@ -1,4 +1,4 @@
-import { useAppStore } from "@/lib/store";
+import { useAppStore, TEAM_MEMBERS } from "@/lib/store";
 import { PROJECT_TYPE_LABELS, STATUS_LABELS, TaskStatus } from "@/lib/types";
 import {
   FolderKanban,
@@ -50,7 +50,7 @@ export default function Dashboard() {
   projectTasks.forEach((t) => statusCounts[t.status]++);
 
   const TypeIcon = TYPE_ICONS[project.type];
-  const team = useAppStore((s) => s.teamMembers.filter((m) => project.teamMembers.includes(m.id)));
+  const team = TEAM_MEMBERS.filter((m) => project.teamMembers.includes(m.id));
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -185,7 +185,7 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">No hay sprint activo</p>
             ) : (
               activeSprintTasks.slice(0, 5).map((task) => {
-                const assignee = useAppStore.getState().teamMembers.find((m) => m.id === task.assigneeId);
+                const assignee = TEAM_MEMBERS.find((m) => m.id === task.assigneeId);
                 return (
                   <div
                     key={task.id}

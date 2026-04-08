@@ -1,4 +1,4 @@
-import { useAppStore } from "@/lib/store";
+import { useAppStore, TEAM_MEMBERS } from "@/lib/store";
 import { TaskStatus, STATUS_LABELS, PRIORITY_LABELS, Task } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { GripVertical, MessageSquare } from "lucide-react";
@@ -15,7 +15,7 @@ const STATUS_COLORS: Record<TaskStatus, string> = {
 };
 
 export default function ScrumBoard() {
-  const { tasks, sprints, selectedProjectId, moveTask, teamMembers } = useAppStore();
+  const { tasks, sprints, selectedProjectId, moveTask } = useAppStore();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
 
@@ -119,7 +119,7 @@ function TaskCard({
   onDragStart: () => void;
   onDragEnd: () => void;
 }) {
-  const assignee = useAppStore((s) => s.teamMembers.find((m) => m.id === task.assigneeId));
+  const assignee = TEAM_MEMBERS.find((m) => m.id === task.assigneeId);
 
   return (
     <div
