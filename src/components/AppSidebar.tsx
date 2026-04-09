@@ -1,5 +1,4 @@
 import { useAppStore } from "@/lib/store";
-import { TEAM_MEMBERS } from "@/lib/store";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,

@@ -105,32 +105,50 @@ interface AppState {
   projects: Project[];
   sprints: Sprint[];
   tasks: Task[];
+  teamMembers: TeamMember[];
   selectedProjectId: string | null;
   
   // Actions
   setSelectedProject: (id: string | null) => void;
   addProject: (project: Project) => void;
+  updateProject: (id: string, updates: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
+  deleteTask: (id: string) => void;
   moveTask: (taskId: string, newStatus: Task["status"]) => void;
   addSprint: (sprint: Sprint) => void;
   updateSprint: (id: string, updates: Partial<Sprint>) => void;
+  deleteSprint: (id: string) => void;
+  addTeamMember: (member: TeamMember) => void;
+  updateTeamMember: (id: string, updates: Partial<TeamMember>) => void;
+  deleteTeamMember: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   projects: INITIAL_PROJECTS,
   sprints: INITIAL_SPRINTS,
   tasks: INITIAL_TASKS,
+  teamMembers: TEAM_MEMBERS,
   selectedProjectId: "p1",
 
   setSelectedProject: (id) => set({ selectedProjectId: id }),
   
   addProject: (project) => set((s) => ({ projects: [...s.projects, project] })),
+  updateProject: (id, updates) => set((s) => ({
+    projects: s.projects.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+  })),
+  deleteProject: (id) => set((s) => ({
+    projects: s.projects.filter((p) => p.id !== id),
+    selectedProjectId: s.selectedProjectId === id ? (s.projects.find(p => p.id !== id)?.id || null) : s.selectedProjectId,
+  })),
   
   addTask: (task) => set((s) => ({ tasks: [...s.tasks, task] })),
-  
   updateTask: (id, updates) => set((s) => ({
     tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+  })),
+  deleteTask: (id) => set((s) => ({
+    tasks: s.tasks.filter((t) => t.id !== id),
   })),
   
   moveTask: (taskId, newStatus) => set((s) => ({
@@ -138,8 +156,20 @@ export const useAppStore = create<AppState>((set) => ({
   })),
   
   addSprint: (sprint) => set((s) => ({ sprints: [...s.sprints, sprint] })),
-  
   updateSprint: (id, updates) => set((s) => ({
     sprints: s.sprints.map((sp) => (sp.id === id ? { ...sp, ...updates } : sp)),
+  })),
+  deleteSprint: (id) => set((s) => ({
+    sprints: s.sprints.filter((sp) => sp.id !== id),
+    tasks: s.tasks.map((t) => (t.sprintId === id ? { ...t, sprintId: undefined } : t)),
+  })),
+
+  addTeamMember: (member) => set((s) => ({ teamMembers: [...s.teamMembers, member] })),
+  updateTeamMember: (id, updates) => set((s) => ({
+    teamMembers: s.teamMembers.map((m) => (m.id === id ? { ...m, ...updates } : m)),
+  })),
+  deleteTeamMember: (id) => set((s) => ({
+    teamMembers: s.teamMembers.filter((m) => m.id !== id),
+    tasks: s.tasks.map((t) => (t.assigneeId === id ? { ...t, assigneeId: undefined } : t)),
   })),
 }));
