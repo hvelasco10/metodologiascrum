@@ -6,7 +6,7 @@ import {
   Calendar,
   FolderKanban,
   Users,
-  Settings,
+  FileBarChart,
   Zap,
   ChevronLeft,
 } from "lucide-react";
