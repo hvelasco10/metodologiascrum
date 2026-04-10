@@ -9,6 +9,7 @@ import ScrumBoard from "./pages/ScrumBoard";
 import SprintsPage from "./pages/SprintsPage";
 import BacklogPage from "./pages/BacklogPage";
 import TeamPage from "./pages/TeamPage";
+import ReportsPage from "./pages/ReportsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/sprints" element={<SprintsPage />} />
             <Route path="/backlog" element={<BacklogPage />} />
             <Route path="/team" element={<TeamPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

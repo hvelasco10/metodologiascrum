@@ -49,7 +49,7 @@ export default function BacklogPage() {
     } else {
       addTask({
         id: `t${Date.now()}`, title: form.title, description: form.description, status: "backlog",
-        priority: form.priority, storyPoints: form.storyPoints, projectId: selectedProjectId,
+        priority: form.priority, storyPoints: form.storyPoints, cost: 0, projectId: selectedProjectId,
         createdAt: new Date().toISOString().split("T")[0], labels, assigneeId: form.assigneeId || undefined,
       });
     }

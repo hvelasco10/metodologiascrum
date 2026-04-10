@@ -6,7 +6,7 @@ import {
   Calendar,
   FolderKanban,
   Users,
-  Settings,
+  FileBarChart,
   Zap,
   ChevronLeft,
 } from "lucide-react";
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { icon: Calendar, label: "Sprints", path: "/sprints" },
   { icon: FolderKanban, label: "Backlog", path: "/backlog" },
   { icon: Users, label: "Equipo", path: "/team" },
+  { icon: FileBarChart, label: "Informes", path: "/reports" },
 ];
 
 export function AppSidebar() {

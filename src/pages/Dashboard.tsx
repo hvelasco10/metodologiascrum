@@ -9,6 +9,8 @@ import {
   Megaphone,
   CalendarDays,
   ArrowRight,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +22,13 @@ const TYPE_ICONS = {
   marketing: Megaphone,
   event: CalendarDays,
 };
+
+function getSprintDays(startDate: string, endDate: string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : 1;
+}
 
 export default function Dashboard() {
   const { projects, sprints, tasks, selectedProjectId, teamMembers } = useAppStore();
@@ -43,6 +52,11 @@ export default function Dashboard() {
     .filter((t) => t.status === "done")
     .reduce((a, t) => a + t.storyPoints, 0);
   const velocity = completedPoints;
+
+  const totalProjectCost = projectTasks.reduce((a, t) => a + t.cost, 0);
+  const sprintTotalCost = activeSprintTasks.reduce((a, t) => a + t.cost, 0);
+  const sprintDays = activeSprint ? getSprintDays(activeSprint.startDate, activeSprint.endDate) : 1;
+  const dailyCost = sprintTotalCost / sprintDays;
 
   const statusCounts: Record<TaskStatus, number> = {
     backlog: 0, todo: 0, in_progress: 0, review: 0, done: 0,
@@ -73,11 +87,11 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FolderKanban className="w-4 h-4" /> Total Historias
+              <FolderKanban className="w-4 h-4" /> Historias
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -94,25 +108,43 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{velocity}</p>
-            <p className="text-xs text-muted-foreground mt-1">puntos completados</p>
+            <p className="text-xs text-muted-foreground mt-1">pts completados</p>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Sprint Activo
+              <DollarSign className="w-4 h-4" /> Costo Proyecto
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-bold truncate">{activeSprint?.name || "Ninguno"}</p>
-            <div className="mt-2">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>{doneTasks}/{totalSprintTasks} tareas</span>
-                <span>{Math.round(sprintProgress)}%</span>
-              </div>
-              <Progress value={sprintProgress} className="h-1.5" />
-            </div>
+            <p className="text-3xl font-bold">${totalProjectCost.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">total acumulado</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <DollarSign className="w-4 h-4" /> Costo Sprint
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">${sprintTotalCost.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{activeSprint?.name || "Sin sprint"}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Costo Diario
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">${Math.round(dailyCost).toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{sprintDays} días de sprint</p>
           </CardContent>
         </Card>
 
@@ -124,26 +156,50 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex -space-x-2">
-              {team.map((m) => (
+              {team.slice(0, 4).map((m) => (
                 <div
                   key={m.id}
-                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-primary-foreground ring-2 ring-card"
+                  className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[10px] font-medium text-primary-foreground ring-2 ring-card"
                   title={m.name}
                 >
                   {m.avatar}
                 </div>
               ))}
+              {team.length > 4 && (
+                <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium ring-2 ring-card">
+                  +{team.length - 4}
+                </div>
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-2">{team.length} miembros</p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Sprint Progress */}
+      {activeSprint && (
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" /> {activeSprint.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground mb-2">{activeSprint.goal}</p>
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>{doneTasks}/{totalSprintTasks} tareas</span>
+              <span>{Math.round(sprintProgress)}%</span>
+            </div>
+            <Progress value={sprintProgress} className="h-2" />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Status Distribution + Sprint Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="text-base">Distribución por Estado</CardTitle>
+            <CardTitle className="text-lg font-bold">Distribución por Estado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {(Object.entries(statusCounts) as [TaskStatus, number][]).map(([status, count]) => (
@@ -172,7 +228,7 @@ export default function Dashboard() {
 
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Tareas del Sprint Actual</CardTitle>
+            <CardTitle className="text-lg font-bold">Tareas del Sprint Actual</CardTitle>
             <Link
               to="/board"
               className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -185,7 +241,7 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">No hay sprint activo</p>
             ) : (
               activeSprintTasks.slice(0, 5).map((task) => {
-                const assignee = useAppStore.getState().teamMembers.find((m) => m.id === task.assigneeId);
+                const assignee = teamMembers.find((m) => m.id === task.assigneeId);
                 return (
                   <div
                     key={task.id}
@@ -198,6 +254,7 @@ export default function Dashboard() {
                       }}
                     />
                     <span className="text-sm flex-1 truncate">{task.title}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">${task.cost.toLocaleString()}</span>
                     <Badge variant="outline" className="text-[10px] shrink-0">
                       {STATUS_LABELS[task.status]}
                     </Badge>
@@ -217,7 +274,7 @@ export default function Dashboard() {
       {/* All Projects */}
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-base">Todos los Proyectos</CardTitle>
+          <CardTitle className="text-lg font-bold">Todos los Proyectos</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -226,6 +283,7 @@ export default function Dashboard() {
               const pTasks = tasks.filter((t) => t.projectId === p.id);
               const pDone = pTasks.filter((t) => t.status === "done").length;
               const pProgress = pTasks.length > 0 ? (pDone / pTasks.length) * 100 : 0;
+              const pCost = pTasks.reduce((a, t) => a + t.cost, 0);
               return (
                 <button
                   key={p.id}
@@ -240,9 +298,7 @@ export default function Dashboard() {
                     <Icon className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium truncate">{p.name}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                    {p.description}
-                  </p>
+                  <p className="text-xs text-muted-foreground mb-1">${pCost.toLocaleString()} costo total</p>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
                     <span>{pDone}/{pTasks.length}</span>
                     <span>{Math.round(pProgress)}%</span>
