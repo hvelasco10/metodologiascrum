@@ -50,7 +50,7 @@ export default function Dashboard() {
   projectTasks.forEach((t) => statusCounts[t.status]++);
 
   const TypeIcon = TYPE_ICONS[project.type];
-  const team = useAppStore((s) => s.teamMembers.filter((m) => project.teamMembers.includes(m.id)));
+  const team = teamMembers.filter((m) => project.teamMembers.includes(m.id));
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
