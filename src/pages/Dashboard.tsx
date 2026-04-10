@@ -22,7 +22,7 @@ const TYPE_ICONS = {
 };
 
 export default function Dashboard() {
-  const { projects, sprints, tasks, selectedProjectId } = useAppStore();
+  const { projects, sprints, tasks, selectedProjectId, teamMembers } = useAppStore();
   const project = projects.find((p) => p.id === selectedProjectId);
 
   if (!project) return null;
