@@ -17,6 +17,7 @@ export interface Task {
   status: TaskStatus;
   priority: Priority;
   storyPoints: number;
+  cost: number; // cost in USD
   assigneeId?: string;
   sprintId?: string;
   projectId: string;
