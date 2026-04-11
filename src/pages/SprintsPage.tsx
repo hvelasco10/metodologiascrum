@@ -2,7 +2,7 @@ import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Target, CheckCircle2, PlayCircle, Plus, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Target, CheckCircle2, PlayCircle, Plus, Pencil, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SprintStatus, STATUS_LABELS, Sprint } from "@/lib/types";
 import { useState } from "react";
@@ -23,7 +23,7 @@ const SPRINT_STATUS_CONFIG: Record<SprintStatus, { label: string; variant: "defa
   completed: { label: "Completado", variant: "secondary" },
 };
 
-const emptyForm = { name: "", goal: "", startDate: "", endDate: "", status: "planned" as SprintStatus };
+const emptyForm = { name: "", goal: "", startDate: "", endDate: "", status: "planned" as SprintStatus, budget: "" };
 
 export default function SprintsPage() {
   const { sprints, tasks, selectedProjectId, updateSprint, addSprint, deleteSprint } = useAppStore();
@@ -41,14 +41,15 @@ export default function SprintsPage() {
 
   const openEdit = (sprint: Sprint) => {
     setEditingSprint(sprint);
-    setForm({ name: sprint.name, goal: sprint.goal, startDate: sprint.startDate, endDate: sprint.endDate, status: sprint.status });
+    setForm({ name: sprint.name, goal: sprint.goal, startDate: sprint.startDate, endDate: sprint.endDate, status: sprint.status, budget: sprint.budget?.toString() || "" });
     setDialogOpen(true);
   };
 
   const handleSave = () => {
     if (!form.name.trim() || !selectedProjectId) return;
+    const budgetValue = form.budget ? parseFloat(form.budget) : undefined;
     if (editingSprint) {
-      updateSprint(editingSprint.id, { name: form.name, goal: form.goal, startDate: form.startDate, endDate: form.endDate, status: form.status });
+      updateSprint(editingSprint.id, { name: form.name, goal: form.goal, startDate: form.startDate, endDate: form.endDate, status: form.status, budget: budgetValue });
     } else {
       addSprint({
         id: `s${Date.now()}`,
@@ -59,6 +60,7 @@ export default function SprintsPage() {
         startDate: form.startDate,
         endDate: form.endDate,
         tasks: [],
+        budget: budgetValue,
       });
     }
     setDialogOpen(false);
@@ -100,6 +102,7 @@ export default function SprintsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div><Label>Presupuesto ($)</Label><Input type="number" min="0" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} placeholder="5000" /></div>
             <Button onClick={handleSave} className="w-full">{editingSprint ? "Guardar Cambios" : "Crear Sprint"}</Button>
           </div>
         </DialogContent>
@@ -170,6 +173,19 @@ export default function SprintsPage() {
                   <span>{sprintTasks.length} tareas · {totalPoints} pts</span>
                   <span>{completedPoints}/{totalPoints} pts completados</span>
                 </div>
+                {sprint.budget != null && (
+                  <div className={`flex items-center gap-2 text-sm mb-3 ${
+                    sprintTasks.reduce((a, t) => a + t.cost, 0) > sprint.budget ? "text-red-500" : "text-green-500"
+                  }`}>
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span>Presupuesto: ${sprint.budget.toLocaleString()}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span>Costo real: ${sprintTasks.reduce((a, t) => a + t.cost, 0).toLocaleString()}</span>
+                    {sprintTasks.reduce((a, t) => a + t.cost, 0) > sprint.budget && (
+                      <Badge variant="destructive" className="text-[10px]">Excedido</Badge>
+                    )}
+                  </div>
+                )}
                 <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
                   <span>Progreso</span>
                   <span>{doneTasks}/{sprintTasks.length} ({Math.round(progress)}%)</span>

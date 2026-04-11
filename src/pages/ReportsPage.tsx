@@ -98,11 +98,15 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm">Presupuesto total estimado</span>
+              <span className="text-sm">Presupuesto del proyecto</span>
+              <span className="text-lg font-bold">${(project.budget ?? 0).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Costo total (todas las tareas)</span>
               <span className="text-lg font-bold">${totalCost.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm">Costo ejecutado (tareas completadas)</span>
+              <span className="text-sm">Costo ejecutado (completadas)</span>
               <span className="text-lg font-bold text-green-500">${completedCost.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
@@ -110,11 +114,20 @@ export default function ReportsPage() {
               <span className="text-lg font-bold text-orange-500">${(totalCost - completedCost).toLocaleString()}</span>
             </div>
             <div className="h-px bg-border" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">% ejecutado</span>
-              <span className="text-sm font-medium">{totalCost > 0 ? Math.round((completedCost / totalCost) * 100) : 0}%</span>
-            </div>
-            <Progress value={totalCost > 0 ? (completedCost / totalCost) * 100 : 0} className="h-2" />
+            {project.budget && project.budget > 0 ? (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Presupuesto utilizado</span>
+                  <span className={`text-sm font-medium ${totalCost > project.budget ? "text-red-500" : "text-green-500"}`}>
+                    {Math.round((totalCost / project.budget) * 100)}%
+                    {totalCost > project.budget ? " ⚠️ Excedido" : ""}
+                  </span>
+                </div>
+                <Progress value={Math.min((totalCost / project.budget) * 100, 100)} className="h-2" />
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">Sin presupuesto definido</p>
+            )}
           </CardContent>
         </Card>
 
@@ -199,11 +212,13 @@ export default function ReportsPage() {
                     </div>
                     <div className="p-2 rounded-lg bg-muted/30">
                       <p className="text-sm font-bold">${sCost.toLocaleString()}</p>
-                      <p className="text-[10px] text-muted-foreground">Costo Total</p>
+                      <p className="text-[10px] text-muted-foreground">Costo Real</p>
                     </div>
                     <div className="p-2 rounded-lg bg-muted/30">
-                      <p className="text-sm font-bold">${Math.round(dailyCost).toLocaleString()}</p>
-                      <p className="text-[10px] text-muted-foreground">Costo/Día</p>
+                      <p className={`text-sm font-bold ${sprint.budget && sCost > sprint.budget ? "text-red-500" : ""}`}>
+                        ${(sprint.budget ?? 0).toLocaleString()}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Presupuesto</p>
                     </div>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
