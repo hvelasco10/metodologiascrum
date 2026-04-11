@@ -17,6 +17,7 @@ export const INITIAL_PROJECTS: Project[] = [
     type: "software",
     createdAt: "2026-03-01",
     teamMembers: ["m1", "m2", "m3", "m4", "m5"],
+    budget: 15000,
   },
   {
     id: "p2",
@@ -25,6 +26,7 @@ export const INITIAL_PROJECTS: Project[] = [
     type: "marketing",
     createdAt: "2026-03-15",
     teamMembers: ["m1", "m2", "m4"],
+    budget: 5000,
   },
   {
     id: "p3",
@@ -33,9 +35,9 @@ export const INITIAL_PROJECTS: Project[] = [
     type: "event",
     createdAt: "2026-02-20",
     teamMembers: ["m1", "m2", "m5"],
+    budget: 8000,
   },
 ];
-
 export const INITIAL_SPRINTS: Sprint[] = [
   {
     id: "s1",
@@ -46,6 +48,7 @@ export const INITIAL_SPRINTS: Sprint[] = [
     startDate: "2026-03-03",
     endDate: "2026-03-14",
     tasks: ["t1", "t2", "t3"],
+    budget: 3000,
   },
   {
     id: "s2",
@@ -56,6 +59,7 @@ export const INITIAL_SPRINTS: Sprint[] = [
     startDate: "2026-03-17",
     endDate: "2026-03-28",
     tasks: ["t4", "t5", "t6", "t7"],
+    budget: 5000,
   },
   {
     id: "s3",
@@ -66,6 +70,7 @@ export const INITIAL_SPRINTS: Sprint[] = [
     startDate: "2026-03-31",
     endDate: "2026-04-11",
     tasks: [],
+    budget: 4000,
   },
   {
     id: "s4",
@@ -76,6 +81,7 @@ export const INITIAL_SPRINTS: Sprint[] = [
     startDate: "2026-03-17",
     endDate: "2026-03-28",
     tasks: ["t8", "t9", "t10"],
+    budget: 3500,
   },
 ];
 
