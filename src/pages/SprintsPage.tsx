@@ -2,7 +2,7 @@ import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Target, CheckCircle2, PlayCircle, Plus, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Target, CheckCircle2, PlayCircle, Plus, Pencil, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SprintStatus, STATUS_LABELS, Sprint } from "@/lib/types";
 import { useState } from "react";
