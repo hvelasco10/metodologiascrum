@@ -115,24 +115,30 @@ export default function Dashboard() {
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="w-4 h-4" /> Costo Proyecto
+              <DollarSign className="w-4 h-4" /> Presupuesto
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${totalProjectCost.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">total acumulado</p>
+            <p className="text-3xl font-bold">${(project.budget ?? 0).toLocaleString()}</p>
+            <p className={`text-xs mt-1 ${totalProjectCost > (project.budget ?? Infinity) ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+              Ejecutado: ${totalProjectCost.toLocaleString()}
+              {project.budget && totalProjectCost > project.budget ? " ⚠️ Excedido" : ""}
+            </p>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="w-4 h-4" /> Costo Sprint
+              <DollarSign className="w-4 h-4" /> Sprint Actual
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${sprintTotalCost.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{activeSprint?.name || "Sin sprint"}</p>
+            <p className="text-3xl font-bold">${(activeSprint?.budget ?? 0).toLocaleString()}</p>
+            <p className={`text-xs mt-1 ${activeSprint?.budget && sprintTotalCost > activeSprint.budget ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+              Ejecutado: ${sprintTotalCost.toLocaleString()}
+              {activeSprint?.budget && sprintTotalCost > activeSprint.budget ? " ⚠️" : ""}
+            </p>
           </CardContent>
         </Card>
 
