@@ -34,6 +34,7 @@ export interface Sprint {
   startDate: string;
   endDate: string;
   tasks: string[]; // task IDs
+  budget?: number; // presupuesto asignado en USD
 }
 
 export interface Project {
@@ -43,6 +44,7 @@ export interface Project {
   type: ProjectType;
   createdAt: string;
   teamMembers: string[]; // member IDs
+  budget?: number; // presupuesto total en USD
 }
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
