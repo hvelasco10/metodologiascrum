@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { STATUS_LABELS, PRIORITY_LABELS, TaskStatus, Priority } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   BarChart3,
   TrendingUp,
@@ -12,7 +17,23 @@ import {
   AlertTriangle,
   Users,
   Target,
+  Sparkles,
+  ShieldAlert,
+  Lightbulb,
+  AlertCircle,
 } from "lucide-react";
+
+interface AiPrediction {
+  tipo: "riesgo" | "alerta" | "recomendacion";
+  titulo: string;
+  descripcion: string;
+  severidad: "alta" | "media" | "baja";
+}
+
+interface AiAnalysis {
+  resumen: string;
+  predicciones: AiPrediction[];
+}
 
 function getSprintDays(startDate: string, endDate: string): number {
   const start = new Date(startDate);
@@ -23,6 +44,8 @@ function getSprintDays(startDate: string, endDate: string): number {
 
 export default function ReportsPage() {
   const { projects, sprints, tasks, selectedProjectId, teamMembers } = useAppStore();
+  const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const project = projects.find((p) => p.id === selectedProjectId);
 
   if (!project) return <p className="p-6 text-muted-foreground">Selecciona un proyecto</p>;
@@ -47,12 +70,153 @@ export default function ReportsPage() {
 
   const criticalNotDone = projectTasks.filter((t) => t.priority === "critical" && t.status !== "done");
 
+  const generateAiAnalysis = async () => {
+    setAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const projectData = {
+        nombre: project.name,
+        tipo: project.type,
+        presupuesto: project.budget ?? 0,
+        progreso: Math.round(overallProgress),
+        tareas: {
+          total: projectTasks.length,
+          completadas: statusCounts.done,
+          enCurso: statusCounts.in_progress + statusCounts.review,
+          pendientes: statusCounts.backlog + statusCounts.todo,
+        },
+        prioridades: priorityCounts,
+        costos: {
+          total: totalCost,
+          ejecutado: completedCost,
+          pendiente: totalCost - completedCost,
+          presupuestoUtilizado: project.budget ? Math.round((totalCost / project.budget) * 100) : null,
+        },
+        storyPoints: { total: totalPoints, completados: completedPoints },
+        sprints: projectSprints.map((s) => {
+          const sTasks = projectTasks.filter((t) => t.sprintId === s.id);
+          const sDone = sTasks.filter((t) => t.status === "done").length;
+          const sCost = sTasks.reduce((a, t) => a + t.cost, 0);
+          return {
+            nombre: s.name, estado: s.status, presupuesto: s.budget ?? 0,
+            costoReal: sCost, tareas: sTasks.length, completadas: sDone,
+            puntos: sTasks.reduce((a, t) => a + t.storyPoints, 0),
+          };
+        }),
+        equipo: team.map((m) => {
+          const mTasks = projectTasks.filter((t) => t.assigneeId === m.id);
+          return {
+            nombre: m.name, rol: m.role,
+            tareasAsignadas: mTasks.length,
+            tareasCompletadas: mTasks.filter((t) => t.status === "done").length,
+          };
+        }),
+        tareasCriticasPendientes: criticalNotDone.length,
+      };
+
+      const { data, error } = await supabase.functions.invoke("ai-report", {
+        body: { projectData },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      setAiAnalysis(data as AiAnalysis);
+    } catch (err: any) {
+      console.error("AI analysis error:", err);
+      toast.error("Error al generar el análisis con IA");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const predictionIcon = (tipo: string) => {
+    switch (tipo) {
+      case "riesgo": return <ShieldAlert className="w-4 h-4 text-red-500" />;
+      case "alerta": return <AlertCircle className="w-4 h-4 text-orange-500" />;
+      case "recomendacion": return <Lightbulb className="w-4 h-4 text-blue-500" />;
+      default: return <AlertCircle className="w-4 h-4" />;
+    }
+  };
+
+  const severityBadge = (sev: string) => {
+    const v: Record<string, "destructive" | "default" | "secondary"> = { alta: "destructive", media: "default", baja: "secondary" };
+    return <Badge variant={v[sev] || "secondary"} className="text-[10px]">{sev.toUpperCase()}</Badge>;
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Informes de Avance</h1>
-        <p className="text-sm text-muted-foreground mt-1">{project.name} — Reporte general del proyecto</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Informes de Avance</h1>
+          <p className="text-sm text-muted-foreground mt-1">{project.name} — Reporte general del proyecto</p>
+        </div>
+        <Button onClick={generateAiAnalysis} disabled={aiLoading} className="gap-2">
+          <Sparkles className="w-4 h-4" />
+          {aiLoading ? "Analizando..." : "Análisis con IA"}
+        </Button>
       </div>
+
+      {/* AI Analysis Section */}
+      {aiLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="glass-card border-primary/20">
+            <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Resumen Ejecutivo</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-[90%]" />
+              <Skeleton className="h-4 w-[80%]" />
+              <Skeleton className="h-4 w-[70%]" />
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-primary/20">
+            <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-primary" /> Predicciones y Alertas</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {aiAnalysis && !aiLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="glass-card border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" /> Resumen Ejecutivo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-relaxed text-muted-foreground">{aiAnalysis.resumen}</p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-primary" /> Predicciones y Alertas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {aiAnalysis.predicciones?.map((pred, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                  <div className="mt-0.5">{predictionIcon(pred.tipo)}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold">{pred.titulo}</span>
+                      {severityBadge(pred.severidad)}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{pred.descripcion}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Overall Progress */}
       <Card className="glass-card border-primary/20">
