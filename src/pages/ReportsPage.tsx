@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { STATUS_LABELS, PRIORITY_LABELS, TaskStatus, Priority } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   BarChart3,
   TrendingUp,
@@ -12,7 +17,23 @@ import {
   AlertTriangle,
   Users,
   Target,
+  Sparkles,
+  ShieldAlert,
+  Lightbulb,
+  AlertCircle,
 } from "lucide-react";
+
+interface AiPrediction {
+  tipo: "riesgo" | "alerta" | "recomendacion";
+  titulo: string;
+  descripcion: string;
+  severidad: "alta" | "media" | "baja";
+}
+
+interface AiAnalysis {
+  resumen: string;
+  predicciones: AiPrediction[];
+}
 
 function getSprintDays(startDate: string, endDate: string): number {
   const start = new Date(startDate);
