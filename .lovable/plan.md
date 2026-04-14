@@ -1,28 +1,42 @@
 
 
-## Situación Actual
+## Análisis con IA en Informes
 
-El costo del proyecto se calcula **sumando el campo `cost` de cada tarea individual**. No existe un campo de presupuesto ni en el Sprint ni en el Proyecto. El formulario de crear/editar sprint solo tiene: nombre, objetivo, fechas y estado — no hay campo de presupuesto.
+Agregar una sección en la página de Informes que use Lovable AI para generar un **resumen ejecutivo** y **predicciones/alertas** basadas en los datos reales del proyecto.
 
-Esto significa que el "costo" es solo lo ejecutado (bottom-up desde tareas), pero no hay forma de definir un **presupuesto planificado** para comparar contra lo real.
+### Cómo funciona
 
-## Plan de Cambios
+1. El usuario hace clic en un botón "Generar Análisis IA" en la página de Informes
+2. Se recopilan todos los datos del proyecto (tareas, sprints, costos, velocidad, equipo) y se envían a una Edge Function
+3. La Edge Function llama a Lovable AI con un prompt que incluye los datos del proyecto
+4. La respuesta se muestra en dos tarjetas: Resumen Ejecutivo y Predicciones/Alertas
 
-### 1. Agregar campo `budget` al modelo de Sprint y Proyecto
-- `Sprint.budget?: number` — presupuesto asignado al sprint
-- `Project.budget?: number` — presupuesto total del proyecto
-- Actualizar datos demo con valores de ejemplo
+### Cambios técnicos
 
-### 2. Agregar campo de presupuesto al formulario de Sprints
-- Nuevo input numérico "Presupuesto ($)" en el diálogo de crear/editar sprint
-- Mostrar en cada tarjeta de sprint: **Presupuesto vs Costo Real** (suma de costos de sus tareas)
+**1. Habilitar Lovable Cloud** (si no está habilitado) para tener acceso a Edge Functions y LOVABLE_API_KEY.
 
-### 3. Actualizar Dashboard y Reportes
-- Dashboard: mostrar **Presupuesto Proyecto** vs **Costo Ejecutado** con indicador visual (verde si dentro del presupuesto, rojo si excedido)
-- Reportes: incluir comparación presupuesto vs ejecutado por sprint
+**2. Crear Edge Function `supabase/functions/ai-report/index.ts`**
+- Recibe los datos del proyecto (métricas, sprints, tareas, costos, equipo)
+- Construye un prompt con contexto completo del proyecto
+- Llama a Lovable AI Gateway con modelo `google/gemini-3-flash-preview`
+- Retorna el análisis en formato estructurado (resumen + predicciones)
 
-### Detalle técnico
-- Archivos a modificar: `types.ts`, `store.ts`, `SprintsPage.tsx`, `Dashboard.tsx`, `ReportsPage.tsx`
-- El costo real sigue calculándose como suma de `task.cost` de las tareas del sprint
-- El presupuesto es un valor manual editable por el usuario
+**3. Actualizar `src/pages/ReportsPage.tsx`**
+- Agregar botón "Generar Análisis IA" con icono de sparkles
+- Nueva sección con dos tarjetas:
+  - **Resumen Ejecutivo**: Párrafo generado por IA con el estado general, logros y situación financiera
+  - **Predicciones y Alertas**: Lista de riesgos detectados, cuellos de botella y recomendaciones
+- Estado de carga con skeleton mientras se genera el análisis
+- Manejo de errores (429/402) con mensajes claros
+
+### Datos que se envían a la IA
+
+- Nombre y tipo de proyecto
+- Progreso general (% completado)
+- Distribución de tareas por estado y prioridad
+- Presupuesto vs costo ejecutado
+- Velocidad del equipo (story points completados)
+- Estado de cada sprint (tareas, costos, presupuesto)
+- Carga por miembro del equipo
+- Tareas críticas pendientes
 
