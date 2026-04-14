@@ -44,6 +44,8 @@ function getSprintDays(startDate: string, endDate: string): number {
 
 export default function ReportsPage() {
   const { projects, sprints, tasks, selectedProjectId, teamMembers } = useAppStore();
+  const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const project = projects.find((p) => p.id === selectedProjectId);
 
   if (!project) return <p className="p-6 text-muted-foreground">Selecciona un proyecto</p>;
