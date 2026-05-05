@@ -27,6 +27,7 @@ const NAV_ITEMS = [
 export function AppSidebar() {
   const location = useLocation();
   const { projects, selectedProjectId, setSelectedProject } = useAppStore();
+  const { user, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const currentProject = projects.find((p) => p.id === selectedProjectId);
 
