@@ -9,9 +9,11 @@ import {
   FileBarChart,
   Zap,
   ChevronLeft,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -25,6 +27,7 @@ const NAV_ITEMS = [
 export function AppSidebar() {
   const location = useLocation();
   const { projects, selectedProjectId, setSelectedProject } = useAppStore();
+  const { user, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const currentProject = projects.find((p) => p.id === selectedProjectId);
 
@@ -102,17 +105,25 @@ export function AppSidebar() {
       </nav>
 
       {/* User */}
-      {!collapsed && (
-        <div className="p-3 border-t border-sidebar-border flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-xs font-medium text-sidebar-primary-foreground">
-            CL
+      <div className="p-3 border-t border-sidebar-border space-y-2">
+        {!collapsed && user && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-xs font-medium text-sidebar-primary-foreground shrink-0">
+              {(user.email?.[0] ?? "U").toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user.email}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Carlos López</p>
-            <p className="text-xs text-sidebar-muted">Scrum Master</p>
-          </div>
-        </div>
-      )}
+        )}
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>Cerrar sesión</span>}
+        </button>
+      </div>
     </aside>
   );
 }
