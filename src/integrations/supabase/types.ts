@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          backlog: boolean
+          board: boolean
+          created_at: string
+          dashboard: boolean
+          reports: boolean
+          sprints: boolean
+          team: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backlog?: boolean
+          board?: boolean
+          created_at?: string
+          dashboard?: boolean
+          reports?: boolean
+          sprints?: boolean
+          team?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backlog?: boolean
+          board?: boolean
+          created_at?: string
+          dashboard?: boolean
+          reports?: boolean
+          sprints?: boolean
+          team?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -67,6 +103,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_permission: {
+        Args: { _section: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

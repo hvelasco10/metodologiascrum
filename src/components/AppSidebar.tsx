@@ -10,24 +10,29 @@ import {
   Zap,
   ChevronLeft,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { SectionKey } from "@/lib/sections";
 
-const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: KanbanSquare, label: "Tablero Scrum", path: "/board" },
-  { icon: Calendar, label: "Sprints", path: "/sprints" },
-  { icon: FolderKanban, label: "Backlog", path: "/backlog" },
-  { icon: Users, label: "Equipo", path: "/team" },
-  { icon: FileBarChart, label: "Informes", path: "/reports" },
+const NAV_ITEMS: { icon: any; label: string; path: string; key: SectionKey }[] = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", key: "dashboard" },
+  { icon: KanbanSquare, label: "Tablero Scrum", path: "/board", key: "board" },
+  { icon: Calendar, label: "Sprints", path: "/sprints", key: "sprints" },
+  { icon: FolderKanban, label: "Backlog", path: "/backlog", key: "backlog" },
+  { icon: Users, label: "Equipo", path: "/team", key: "team" },
+  { icon: FileBarChart, label: "Informes", path: "/reports", key: "reports" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { projects, selectedProjectId, setSelectedProject } = useAppStore();
   const { user, signOut } = useAuth();
+  const { can, isAdmin } = usePermissions();
+  const visibleItems = NAV_ITEMS.filter((it) => can(it.key));
   const [collapsed, setCollapsed] = useState(false);
   const currentProject = projects.find((p) => p.id === selectedProjectId);
 
@@ -84,7 +89,7 @@ export function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
@@ -102,6 +107,20 @@ export function AppSidebar() {
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            to="/users"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors mt-2",
+              location.pathname === "/users"
+                ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                : "text-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            )}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            {!collapsed && <span>Usuarios</span>}
+          </Link>
+        )}
       </nav>
 
       {/* User */}

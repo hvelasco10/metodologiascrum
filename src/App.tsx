@@ -13,6 +13,8 @@ import BacklogPage from "./pages/BacklogPage";
 import TeamPage from "./pages/TeamPage";
 import ReportsPage from "./pages/ReportsPage";
 import Auth from "./pages/Auth";
+import Setup from "./pages/Setup";
+import UsersAdmin from "./pages/UsersAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,18 +28,20 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/setup" element={<Setup />} />
             <Route
               path="/*"
               element={
                 <ProtectedRoute>
                   <AppLayout>
                     <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/board" element={<ScrumBoard />} />
-                      <Route path="/sprints" element={<SprintsPage />} />
-                      <Route path="/backlog" element={<BacklogPage />} />
-                      <Route path="/team" element={<TeamPage />} />
-                      <Route path="/reports" element={<ReportsPage />} />
+                      <Route path="/" element={<ProtectedRoute section="dashboard"><Dashboard /></ProtectedRoute>} />
+                      <Route path="/board" element={<ProtectedRoute section="board"><ScrumBoard /></ProtectedRoute>} />
+                      <Route path="/sprints" element={<ProtectedRoute section="sprints"><SprintsPage /></ProtectedRoute>} />
+                      <Route path="/backlog" element={<ProtectedRoute section="backlog"><BacklogPage /></ProtectedRoute>} />
+                      <Route path="/team" element={<ProtectedRoute section="team"><TeamPage /></ProtectedRoute>} />
+                      <Route path="/reports" element={<ProtectedRoute section="reports"><ReportsPage /></ProtectedRoute>} />
+                      <Route path="/users" element={<ProtectedRoute section="admin"><UsersAdmin /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </AppLayout>
