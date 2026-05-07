@@ -107,6 +107,20 @@ export function AppSidebar() {
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            to="/users"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors mt-2",
+              location.pathname === "/users"
+                ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                : "text-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            )}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            {!collapsed && <span>Usuarios</span>}
+          </Link>
+        )}
       </nav>
 
       {/* User */}

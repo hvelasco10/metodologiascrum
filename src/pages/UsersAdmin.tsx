@@ -194,8 +194,8 @@ function EditPermissionsDialog({ user, onClose }: { user: AdminUser; onClose: ()
 
   const submit = async () => {
     setLoading(true);
-    const row: Record<string, any> = { user_id: user.id, ...permissions };
-    const { error } = await supabase.from("user_permissions").upsert(row, { onConflict: "user_id" });
+    const row = { user_id: user.id, ...permissions };
+    const { error } = await supabase.from("user_permissions").upsert([row], { onConflict: "user_id" });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Permisos actualizados");
