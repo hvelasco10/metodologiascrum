@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Zap } from "lucide-react";
 
@@ -14,7 +13,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -23,6 +22,9 @@ export default function Auth() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session) navigate("/", { replace: true });
     });
+    // Detect if the system already has an admin (to optionally show setup link)
+    supabase.from("user_roles").select("role", { count: "exact", head: true }).eq("role", "admin")
+      .then(({ count }) => setHasAdmin((count ?? 0) > 0));
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
@@ -35,22 +37,6 @@ export default function Auth() {
     else toast.success("¡Bienvenido!");
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { display_name: displayName },
-      },
-    });
-    setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Cuenta creada");
-  };
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -59,49 +45,29 @@ export default function Auth() {
             <Zap className="w-6 h-6 text-primary-foreground" />
           </div>
           <CardTitle>ScrumFlow</CardTitle>
-          <CardDescription>Inicia sesión o crea una cuenta</CardDescription>
+          <CardDescription>Inicia sesión para continuar</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Iniciar sesión</TabsTrigger>
-              <TabsTrigger value="signup">Registrarse</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input id="signin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Contraseña</Label>
-                  <Input id="signin-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Cargando..." : "Iniciar sesión"}
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nombre</Label>
-                  <Input id="signup-name" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Contraseña</Label>
-                  <Input id="signup-password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creando..." : "Crear cuenta"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <Input id="signin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signin-password">Contraseña</Label>
+              <Input id="signin-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Cargando..." : "Iniciar sesión"}
+            </Button>
+          </form>
+          <p className="text-xs text-muted-foreground text-center mt-6">
+            {hasAdmin === false ? (
+              <>No hay administrador configurado. <a href="/setup" className="text-primary underline">Configurar administrador</a></>
+            ) : (
+              <>¿No tienes cuenta? Contacta al administrador.</>
+            )}
+          </p>
         </CardContent>
       </Card>
     </div>
